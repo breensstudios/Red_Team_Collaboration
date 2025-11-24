@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: always
+
+  backend:
+    build: ./backend
+    ports:
+      - "15060:15060"
+    environment:
+      - CONFIG_FILE=/app/data/config.json
+      # 生产环境请修改下面的密钥
+      - JWT_SECRET_KEY=change-this-secret-key-in-production
+    volumes:
+      - backend-uploads:/app/uploads
+      - backend-data:/app/data
+    depends_on:
+      - db
+    networks:
+      - app-network
+    restart: always
+
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: asset_platform
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - app-network
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  backend-uploads:
+  backend-data:
+  db-data:
