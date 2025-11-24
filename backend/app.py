@@ -13,6 +13,8 @@ from bs4 import BeautifulSoup
 import urllib3
 import jwt
 from functools import wraps
+import subprocess
+import time
 
 # 禁用SSL警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -3473,6 +3475,409 @@ def create_curl_task(project_id):
     
     except Exception as e:
         return jsonify({'success': False, 'message': f'创建任务失败: {str(e)}'}), 500
+
+@app.route('/api/curl-tasks/<int:task_id>', methods=['PUT'])
+def update_curl_task(task_id):
+    """更新curl任务"""
+    if not check_installed():
+        return jsonify({'success': False, 'message': '系统未安装'}), 400
+    
+    data = request.json
+    
+    # 获取当前用户（安全方式）
+    user = get_current_user()
+    if not user:
+        return jsonify({'success': False, 'message': '未登录或认证已过期'}), 401
+    
+    user_id = user['id']
+    
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'message': '数据库连接失败'}), 500
+    
+    try:
+        cursor = conn.cursor()
+        
+        # 权限检查
+        if not check_curl_task_permission(cursor, task_id, user_id, require_owner=False):
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'message': '无权修改该任务'}), 403
+        
+        # 构建更新SQL
+        update_fields = []
+        update_values = []
+        
+        if 'name' in data:
+            update_fields.append('name = %s')
+            update_values.append(data['name'])
+        
+        if 'curl_command' in data:
+            update_fields.append('curl_command = %s')
+            update_values.append(data['curl_command'])
+        
+        if 'extract_pattern' in data:
+            update_fields.append('extract_pattern = %s')
+            update_values.append(data['extract_pattern'])
+        
+        if 'schedule_type' in data:
+            update_fields.append('schedule_type = %s')
+            update_values.append(data['schedule_type'])
+        
+        if 'schedule_config' in data:
+            update_fields.append('schedule_config = %s')
+            update_values.append(json.dumps(data['schedule_config']) if data['schedule_config'] else None)
+        
+        if 'enabled' in data:
+            update_fields.append('enabled = %s')
+            update_values.append(data['enabled'])
+        
+        if 'template_type' in data:
+            update_fields.append('template_type = %s')
+            update_values.append(data['template_type'])
+        
+        if 'template_config' in data:
+            update_fields.append('template_config = %s')
+            update_values.append(json.dumps(data['template_config']) if data['template_config'] else None)
+        
+        if 'batch_tags' in data:
+            update_fields.append('batch_tags = %s')
+            update_values.append(json.dumps(data['batch_tags'], ensure_ascii=False) if data['batch_tags'] else None)
+        
+        if not update_fields:
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'message': '没有需要更新的字段'}), 400
+        
+        update_values.append(task_id)
+        sql = f"UPDATE curl_tasks SET {', '.join(update_fields)} WHERE id = %s"
+        
+        cursor.execute(sql, update_values)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': '任务更新成功'})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'更新任务失败: {str(e)}'}), 500
+
+@app.route('/api/curl-tasks/<int:task_id>', methods=['DELETE'])
+def delete_curl_task(task_id):
+    """删除curl任务"""
+    if not check_installed():
+        return jsonify({'success': False, 'message': '系统未安装'}), 400
+    
+    # 获取当前用户（安全方式）
+    user = get_current_user()
+    if not user:
+        return jsonify({'success': False, 'message': '未登录或认证已过期'}), 401
+    
+    user_id = user['id']
+    
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'message': '数据库连接失败'}), 500
+    
+    try:
+        cursor = conn.cursor()
+        
+        # 权限检查
+        if not check_curl_task_permission(cursor, task_id, user_id, require_owner=False):
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'message': '无权删除该任务'}), 403
+        
+        # 删除任务执行日志
+        cursor.execute("DELETE FROM curl_task_logs WHERE task_id = %s", (task_id,))
+        
+        # 删除任务
+        cursor.execute("DELETE FROM curl_tasks WHERE id = %s", (task_id,))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': '任务删除成功'})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'删除任务失败: {str(e)}'}), 500
+
+@app.route('/api/curl-tasks/<int:task_id>/execute', methods=['POST'])
+def execute_curl_task(task_id):
+    """执行curl任务"""
+    if not check_installed():
+        return jsonify({'success': False, 'message': '系统未安装'}), 400
+    
+    # 获取当前用户（安全方式）
+    user = get_current_user()
+    if not user:
+        return jsonify({'success': False, 'message': '未登录或认证已过期'}), 401
+    
+    user_id = user['id']
+    
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'message': '数据库连接失败'}), 500
+    
+    try:
+        cursor = conn.cursor()
+        
+        # 权限检查
+        if not check_curl_task_permission(cursor, task_id, user_id, require_owner=False):
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'message': '无权执行该任务'}), 403
+        
+        # 获取任务详情
+        cursor.execute("SELECT * FROM curl_tasks WHERE id = %s", (task_id,))
+        task = cursor.fetchone()
+        
+        if not task:
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'message': '任务不存在'}), 404
+        
+        # 更新任务状态为运行中
+        cursor.execute("""
+            UPDATE curl_tasks 
+            SET last_run_status = 'running', last_run_time = NOW()
+            WHERE id = %s
+        """, (task_id,))
+        conn.commit()
+        
+        start_time = time.time()
+        assets_extracted = 0
+        error_message = None
+        status = 'success'
+        
+        try:
+            # 根据模板类型执行不同的逻辑
+            template_type = task.get('template_type', 'custom')
+            
+            if template_type == 'custom':
+                # 执行自定义curl命令
+                curl_command = task['curl_command']
+                if not curl_command:
+                    raise Exception('curl命令为空')
+                
+                # 执行curl命令
+                result = subprocess.run(
+                    curl_command,
+                    shell=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=300  # 5分钟超时
+                )
+                
+                if result.returncode != 0:
+                    raise Exception(f'curl命令执行失败: {result.stderr}')
+                
+                output = result.stdout
+                
+                # 通用资产提取逻辑
+                extracted_assets = set()  # 使用集合去重
+                
+                # 1. 提取 URL (http/https)
+                url_pattern = r'https?://[a-zA-Z0-9][-a-zA-Z0-9.]*(?::\d+)?(?:/[^\s]*)?'
+                urls = re.findall(url_pattern, output)
+                for url in urls:
+                    # 清理URL末尾可能的标点符号
+                    url = re.sub(r'[,;)\]}>"\'\s]+$', '', url)
+                    if url:
+                        extracted_assets.add(('url', url))
+                
+                # 2. 提取 IP:端口
+                ip_port_pattern = r'\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):\d{1,5}\b'
+                ip_ports = re.findall(ip_port_pattern, output)
+                for ip_port in ip_ports:
+                    extracted_assets.add(('ip_port', ip_port))
+                
+                # 3. 提取纯 IP（排除已经作为 IP:端口 提取的）
+                ip_pattern = r'\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'
+                ips = re.findall(ip_pattern, output)
+                for ip in ips:
+                    # 检查这个IP是否已经作为IP:端口的一部分被提取
+                    is_part_of_ip_port = any(ip_port.startswith(ip + ':') for _, ip_port in extracted_assets if _ == 'ip_port')
+                    if not is_part_of_ip_port:
+                        extracted_assets.add(('ip', ip))
+                
+                # 4. 提取域名（包括子域名）
+                # 域名模式：支持多级子域名，但排除URL中已提取的域名
+                domain_pattern = r'\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}\b'
+                domains = re.findall(domain_pattern, output)
+                for domain in domains:
+                    # 排除已经在URL中提取的域名
+                    is_in_url = any(domain in url for _, url in extracted_assets if _ == 'url')
+                    # 排除常见的非域名模式（如文件名）
+                    if not is_in_url and not domain.endswith(('.jpg', '.png', '.gif', '.css', '.js', '.json', '.xml')):
+                        extracted_assets.add(('domain', domain))
+                
+                # 如果用户指定了自定义提取模式，也执行自定义提取
+                extract_pattern = task.get('extract_pattern', '')
+                if extract_pattern:
+                    try:
+                        custom_matches = re.findall(extract_pattern, output)
+                        for match in custom_matches:
+                            match_value = match if isinstance(match, str) else match[0]
+                            # 自动判断类型
+                            if re.match(r'^https?://', match_value):
+                                extracted_assets.add(('url', match_value))
+                            elif re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d+$', match_value):
+                                extracted_assets.add(('ip_port', match_value))
+                            elif re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_value):
+                                extracted_assets.add(('ip', match_value))
+                            else:
+                                extracted_assets.add(('domain', match_value))
+                    except re.error:
+                        pass  # 忽略正则表达式错误
+                
+                # 批量插入资产
+                batch_tags = task.get('batch_tags')
+                tags_json = batch_tags if batch_tags else None
+                
+                for asset_type, asset_value in extracted_assets:
+                    # 根据类型调整
+                    if asset_type == 'url':
+                        if asset_value.startswith('https://'):
+                            final_type = 'https'
+                        else:
+                            final_type = 'http'
+                    else:
+                        final_type = asset_type
+                    
+                    # 检查资产是否已存在
+                    cursor.execute("""
+                        SELECT id FROM assets 
+                        WHERE project_id = %s AND asset_value = %s
+                    """, (task['project_id'], asset_value))
+                    
+                    if not cursor.fetchone():
+                        # 插入新资产
+                        cursor.execute("""
+                            INSERT INTO assets 
+                            (project_id, asset_type, asset_value, tags, created_by)
+                            VALUES (%s, %s, %s, %s, %s)
+                        """, (task['project_id'], final_type, asset_value, tags_json, user_id))
+                        assets_extracted += 1
+                
+                conn.commit()
+            
+            elif template_type == 'lighthouse':
+                # 灯塔导入逻辑
+                template_config = json.loads(task.get('template_config', '{}'))
+                lighthouse_url = template_config.get('url', '')
+                username = template_config.get('username', '')
+                password = template_config.get('password', '')
+                
+                if not all([lighthouse_url, username, password]):
+                    raise Exception('灯塔配置信息不完整')
+                
+                # 这里应该实现灯塔API调用逻辑
+                # 暂时返回提示信息
+                error_message = '灯塔导入功能待实现'
+                status = 'failed'
+            
+            elif template_type == 'fofa':
+                # FOFA查询逻辑
+                template_config = json.loads(task.get('template_config', '{}'))
+                email = template_config.get('email', '')
+                api_key = template_config.get('api_key', '')
+                query = template_config.get('query', '')
+                
+                if not all([email, api_key, query]):
+                    raise Exception('FOFA配置信息不完整')
+                
+                # 这里应该实现FOFA API调用逻辑
+                # 暂时返回提示信息
+                error_message = 'FOFA查询功能待实现'
+                status = 'failed'
+        
+        except subprocess.TimeoutExpired:
+            status = 'failed'
+            error_message = 'curl命令执行超时'
+        except Exception as e:
+            status = 'failed'
+            error_message = str(e)
+        
+        execution_time = int((time.time() - start_time) * 1000)  # 毫秒
+        
+        # 更新任务状态
+        cursor.execute("""
+            UPDATE curl_tasks 
+            SET last_run_status = %s, 
+                last_run_time = NOW(),
+                assets_extracted = %s
+            WHERE id = %s
+        """, (status, assets_extracted, task_id))
+        
+        # 记录执行日志
+        cursor.execute("""
+            INSERT INTO curl_task_logs 
+            (task_id, status, assets_extracted, execution_time, error_message)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (task_id, status, assets_extracted, execution_time, error_message))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        if status == 'success':
+            return jsonify({
+                'success': True,
+                'message': f'任务执行成功，提取了 {assets_extracted} 个资产',
+                'assets_extracted': assets_extracted
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': f'任务执行失败: {error_message}'
+            }), 500
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'执行任务失败: {str(e)}'}), 500
+
+@app.route('/api/curl-tasks/<int:task_id>/logs', methods=['GET'])
+def get_curl_task_logs(task_id):
+    """获取curl任务执行日志"""
+    if not check_installed():
+        return jsonify({'success': False, 'message': '系统未安装'}), 400
+    
+    # 获取当前用户（安全方式）
+    user = get_current_user()
+    if not user:
+        return jsonify({'success': False, 'message': '未登录或认证已过期'}), 401
+    
+    user_id = user['id']
+    
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'success': False, 'message': '数据库连接失败'}), 500
+    
+    try:
+        cursor = conn.cursor()
+        
+        # 权限检查
+        if not check_curl_task_permission(cursor, task_id, user_id, require_owner=False):
+            cursor.close()
+            conn.close()
+            return jsonify({'success': False, 'message': '无权查看该任务日志'}), 403
+        
+        # 获取日志
+        cursor.execute("""
+            SELECT * FROM curl_task_logs
+            WHERE task_id = %s
+            ORDER BY created_at DESC
+            LIMIT 100
+        """, (task_id,))
+        logs = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'success': True, 'logs': logs})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'获取日志失败: {str(e)}'}), 500
 
 # ==================== 大屏数据接口 ====================
 
